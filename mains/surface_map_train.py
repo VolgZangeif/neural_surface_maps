@@ -33,8 +33,9 @@ class SurfaceMap(DifferentialMixin, LightningModule):
 
 
     def configure_optimizers(self):
-        LR        = 1.0e-4
-        optimizer = RMSprop(self.net.parameters(), lr=LR, momentum=0.9)
+        LR        = self.config.optimizer.lr
+        momentum  = self.config.optimizer.momentum
+        optimizer = RMSprop(self.net.parameters(), lr=LR, momentum=momentum)
         restart   = int(self.config.dataset.num_epochs)
         scheduler = CosineAnnealingLR(optimizer, T_max=restart)
         return [optimizer], [scheduler]
@@ -63,4 +64,43 @@ class SurfaceMap(DifferentialMixin, LightningModule):
 
         # add here logging if needed
 
-        return loss
+        # logs - a dictionary
+        logs={"loss": loss,
+              "loss_dist": loss_dist,
+              "loss_normals": 0.01*loss_normals}
+
+        batch_dictionary = {
+            # REQUIRED
+            "loss": loss,
+            
+            # Optional: For logging purposes
+            "log": logs
+        }
+
+        self.log("my_loss", loss)
+
+
+        #return loss
+        return batch_dictionary
+
+    def training_epoch_end(self, outputs):
+        # Function is called after the end of each epoch
+
+        # Calculating average loss
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+
+        # creating log dictionary
+        tensorboard_logs = {'loss': avg_loss}
+
+
+        epoch_dictionary={
+            # required
+            'loss': avg_loss,
+            
+            # for logging purposes
+            'log': tensorboard_logs
+        }
+
+        self.log("my_loss_avg", avg_loss)
+
+        return epoch_dictionary

@@ -1,0 +1,28 @@
+checkpointing :
+  checkpoint_path    : './outputs/neural_map/'
+  prefix : 'intersurface'
+  suffix : 'xx_to_xx_map_x'
+
+dataset :
+  sample_path_g : './outputs/may11_outputs/xxx_surface_map.pth'
+  sample_path_f : './outputs/may11_outputs/xxx_surface_map.pth'
+  # eg
+  # sample_path_g : './bimba_map.pth'
+  # sample_path_f : './beethoven_map.pth'
+  num_workers   : 4
+  num_points    : 1024
+  num_epochs    : 80000
+  landmarks_g   : [15420,16422,18790,17112,19853,24008,23798,12463,12370,17028,16793] # list of landmarks
+  landmarks_f   : [49421,39699,34250,46353,43160,25792,45658,43986,44527,7382,17455] # list of landmarks
+  loss_map_coeff        : 1.0e2
+  loss_bnd_coeff        : 1.0e4
+  loss_lands_coeff      : 1.0e6
+  loss_conf_coeff       : 0.0
+
+optimizer:
+  lr    : 1.0e-4
+  momentum      : 0.9
+
+hydra:
+  run:
+    dir: './'

@@ -1,10 +1,10 @@
 checkpointing :
   checkpoint_path    : './outputs/neural_map/'
   prefix : 'overfit'
-  every_n_epochs        : None
+  suffix : 'XX'
 
 dataset :
-  sample_path : '/SET/YOUR/PATH/HERE/'
+  sample_path : '/home/sanyam/working2/neural_surface_maps/outputs/may11_outputs/XX_sample.pth'
   num_workers : 4
   num_points  : 4000
   num_epochs  : 50000
@@ -12,7 +12,6 @@ dataset :
 optimizer:
   lr    : 1.0e-4
   momentum      : 0.9
-
 
 hydra:
   run:

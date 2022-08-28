@@ -13,6 +13,14 @@ dataset :
   num_epochs    : 80000
   landmarks_g   : [0] # list of landmarks
   landmarks_f   : [0] # list of landmarks
+  loss_map_coeff        : 1.0
+  loss_bnd_coeff        : 1.0e4
+  loss_lands_coeff      : 1.0e6
+  loss_conf_coeff       : 0.0
+
+optimizer:
+  lr    : 1.0e-4
+  momentum      : 0.0
 
 
 hydra:

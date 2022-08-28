@@ -13,6 +13,7 @@ from loss import SSDLoss
 from loss import IsometricMapLoss
 from loss import CircleBoundaryLoss
 from loss import SDFLoss
+from loss import ConformalMapLoss
 
 
 class InterSurfaceMap(LightningModule):
@@ -30,6 +31,9 @@ class InterSurfaceMap(LightningModule):
         self.bound_loss = CircleBoundaryLoss()
         self.sdf_loss   = SDFLoss()
 
+        #extra losses
+        self.conf_loss  = ConformalMapLoss()
+
 
     def train_dataloader(self):
         self.dataset = MapDataset(self.config.dataset)
@@ -40,8 +44,9 @@ class InterSurfaceMap(LightningModule):
 
 
     def configure_optimizers(self):
-        LR        = 1.0e-4
-        optimizer = RMSprop(self.net.parameters(), lr=LR)
+        LR        = self.config.optimizer.lr
+        momentum  = self.config.optimizer.momentum
+        optimizer = RMSprop(self.net.parameters(), lr=LR, momentum=momentum)
         restart   = int(self.config.dataset.num_epochs)
         scheduler = CosineAnnealingLR(optimizer, T_max=restart)
         return [optimizer], [scheduler]
@@ -77,7 +82,43 @@ class InterSurfaceMap(LightningModule):
         loss_lands = self.lands_loss(map_lands, lands_f)
         loss_sdf   = self.sdf_loss(map_src)
 
-        loss = loss_map + 1.0e4 * (loss_bnd+loss_sdf) + 1.0e6 * loss_lands
+        if self.config.dataset.loss_conf_coeff==0:
+            loss_conf  = 0
+        else:
+            loss_conf  = self.conf_loss(F, map_src, source, G)
+
+        loss_map_coeff      = self.config.dataset.loss_map_coeff
+        loss_bnd_coeff      = self.config.dataset.loss_bnd_coeff
+        loss_lands_coeff    = self.config.dataset.loss_lands_coeff
+
+        loss_conf_coeff     = self.config.dataset.loss_conf_coeff
+
+        #loss = loss_map + 1.0e4 * (loss_bnd+loss_sdf) + 1.0e6 * loss_lands
+        loss = loss_map_coeff * loss_map + loss_bnd_coeff * loss_bnd + 1.0e4 * loss_sdf + loss_lands_coeff * loss_lands + loss_conf_coeff * loss_conf
 
 
-        return loss
+        #logging
+        # logs - a dictionary
+        logs={  "loss": loss,
+                "loss_map": loss_map*loss_map_coeff,
+                "loss_bnd": loss_bnd*loss_bnd_coeff,
+                "loss_lands": loss_lands*loss_lands_coeff,
+                "loss_sdf": loss_sdf*1.0e4,
+                "loss_conf": loss_conf*loss_conf_coeff
+        }
+
+        batch_dictionary = {
+            # REQUIRED
+            "loss": loss,
+            "loss_map": loss_map,
+            "loss_bnd": loss_bnd*1.0e4,
+            "loss_lands": loss_lands*1.0e6,
+            "loss_sdf": loss_sdf*1.0e4,
+            
+            # Optional: For logging purposes
+            "log": logs
+        }
+
+
+        #return loss
+        return batch_dictionary

@@ -8,10 +8,13 @@ import os
 def compose_config_folders(config):
 
     prefix = config.checkpointing.prefix
+    suffix = config.checkpointing.suffix
     timestamp = str(datetime.timestamp(datetime.now()))
 
     exp_folder = config.checkpointing.checkpoint_path
     exp_name   = prefix + '_' + timestamp
+    if(suffix):
+        exp_name = prefix + '_' + suffix
 
     config.checkpointing.checkpoint_path = os.path.join(exp_folder, exp_name)
 

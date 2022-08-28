@@ -9,11 +9,13 @@ from utils import save_model
 
 from pytorch_lightning import Trainer
 
+from pytorch_lightning.callbacks import ModelCheckpoint
+
 from mains import InterSurfaceMap
 
 
 
-@hydra.main(config_path='experiments', config_name='inter_surface_map')
+@hydra.main(config_path='experiments')
 def main(cfg: DictConfig) -> None:
     compose_config_folders(cfg)
     copy_config_to_experiment_folder(cfg)
@@ -21,7 +23,12 @@ def main(cfg: DictConfig) -> None:
     model = InterSurfaceMap(cfg)
     model.net.load_state_dict(torch.load('inits/softplus_128_identity.pth'))
 
-    trainer = Trainer(gpus=1, max_epochs=1)
+    #print(cfg.dataset.landmarks_g,cfg.dataset.landmarks_f)
+
+    checkpoint_callback = ModelCheckpoint()
+
+
+    trainer = Trainer(gpus=1, max_epochs=1, track_grad_norm=2, callbacks=[checkpoint_callback])
     trainer.fit(model)
 
     # save surface map as sample for inter surface map

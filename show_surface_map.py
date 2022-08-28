@@ -5,7 +5,19 @@ from models import SurfaceMapModel
 from utils import show_mesh
 
 
-CHECKPOINT_PATH = '/SET/HERE/YOUR/PATH/TO/PTH'
+#CHECKPOINT_PATH = '/SET/HERE/YOUR/PATH/TO/PTH'
+#SUFFIX = ''
+#DIR = '/SET/YOUR/DIRECTORY/HERE'
+
+# For example
+CHECKPOINT_PATH = '/home/sanyam/working2/neural_surface_maps/outputs/aug1_outputs/horse_100k_surface_map.pth'
+SUFFIX = 'horse_100k'
+DIR = './outputs/aug1_meshes'
+
+
+
+
+
 
 
 def main() -> None:
@@ -29,7 +41,7 @@ def main() -> None:
     out     = net(source, weights)
     pp_loss = (out - gt).pow(2).sum(-1)
 
-    show_mesh('neural_surface_small.ply', source, out, faces, pp_loss)
+    show_mesh(f'{DIR}/{SUFFIX}_surface_small.ply', source, out, faces, pp_loss)
 
 
     # generate mesh at sample vertices
@@ -38,7 +50,7 @@ def main() -> None:
 
     out = net(source, weights)
 
-    show_mesh('neural_surface_big.ply', source, out, faces)
+    show_mesh(f'{DIR}/{SUFFIX}_surface_big.ply', source, out, faces)
 
 
 

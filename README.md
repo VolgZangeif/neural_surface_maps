@@ -29,9 +29,23 @@ The file `output_sample.pth` is the sample ready to be over-fitted.
 #### 3. Overfit surface
 A surface representation is generated with:
 ```py
-python -m training_surface_map dataset.sample_path=output_sample.pth
+python -m train_surface_map dataset.sample_path=output_sample.pth
 ```
-This will save a surface map inside `outputs/neural_maps` folder. The folder name follows this patterns: `overfit_[timestamp]`. Inside that folder, the map is saved under the `sample` fodler as `pth` file.
+
+Other way to do it is to set the sample path in the config file and place it in the folder `experiments/surface_map` and then use the command
+
+```py
+python -m train_surface_map +surface_map=base
+```
+
+This reads the config file `experiments/surface_map/base.yaml`
+
+This will save a surface map inside `outputs/neural_maps` folder.
+The folder name follows this patterns: `overfit_[suffix]`.
+Inside that folder, the map is saved under the `sample` folder as `pth` file.
+The suffix is used as given in the config file.
+
+**NOTE** that this assumes the existence of a folder called output in the base directory
 
 The overfitted surface can be generated with:
 ```py
@@ -42,7 +56,7 @@ please, set the path to the `pth` file just created inside the script.
 #### 4. Neural parametrization
 Generating a neural parametrization need to run:
 ```py
-python -m training_parametrization_map dataset.sample_path=your_surface_map.pth
+python -m train_parametrization_map dataset.sample_path=your_surface_map.pth
 ```
 Like for the overfitting, this saves the map inside `outputs/neural_maps` folder. The folder name have the following patterns `parametrization_[timestamp]`.
 
@@ -55,23 +69,41 @@ please, set the path to the `pth` file just created inside the script.
 #### 5. Optimize surface-to-surface map
 To generating a inter-surface map run:
 ```py
-python -m training_intersurface_map dataset.sample_path_g=your_surface_map_a.pth dataset.sample_path_f=your_surface_map_b.pth
+python -m train_intersurface_map dataset.sample_path_g=your_surface_map_a.pth dataset.sample_path_f=your_surface_map_b.pth
 ```
-Note, this steps requires two surface maps. A source, `sample_path_g`, and a target, `sample_path_f`.
 
-Likewise the overfitting, the map is saved inside `outputs/neural_maps`. The inter-surface map folder pattern is `intersurface_[timestamp]`. The `pth` file is inside the `models` folder.
+Other way to do it is to set the sample path in the config file and place it in the folder `experiments/inter_map` and then use the command
+
+```py
+python -m train_intersurface_map +inter_map=base
+```
+
+This reads the config file `experiments/inter_map/base.yaml`
+
+
+
+Note, this steps requires two surface maps. A source, `sample_path_g`, and a target, `sample_path_f`.
+Further, it requires the landmark points for the 2 surfaces.
+Remember to set them in the config file or on command line before running the program.
+
+Likewise the overfitting, the map is saved inside `outputs/neural_maps`.
+The inter-surface map folder pattern is `intersurface_[suffix]`.
+The `pth` file is inside the `models` folder.
+The suffix is used as given in the config file.
+
 
 To display the inter-surface map run:
 ```py
 python -m show_intersurface_map
 ```
 remember to set the path of the maps inside the script.
+Also, remember to specify the landmark points in this script as well.
 
 
 #### 6. Optimize collection map
 A collection between a set of surface maps can be optimized with:
 ```py
-python -m training_intersurface_map dataset.sample_path_g=your_surface_map_g.pth dataset.sample_path_f=your_surface_map_f.pth dataset.sample_path_q=your_surface_map_q.pth
+python -m train_intersurface_map dataset.sample_path_g=your_surface_map_g.pth dataset.sample_path_f=your_surface_map_f.pth dataset.sample_path_q=your_surface_map_q.pth
 ```
 Note, this steps requires three surface maps. A source, `sample_path_g`, and two targets, `sample_path_f` and `sample_path_q`.
 
